@@ -43,10 +43,12 @@ calculo_binomial_0 <- function(nsize, zsize, mu = 0.5, sigma = 1/12,
     julia_eval('include("functions/Model/check_convergencia.jl")')
   }
   
+  tiene_ceros <- is.element(0, nsize)
+  
   nsize <- JuliaObject(nsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
   zsize <- JuliaObject(zsize) # para los 3. Si no, ponle el transpuesto  
   
-  julia_assign("nsize", zsize)
+  julia_assign("nsize", nsize)
   julia_assign("zsize", zsize)
   
   # Calculo de x, y
@@ -55,18 +57,17 @@ calculo_binomial_0 <- function(nsize, zsize, mu = 0.5, sigma = 1/12,
   x <- julia_eval("x = calculo_xy(mu, sigma)[1]")
   y <- julia_eval("y = calculo_xy(mu, sigma)[2]")
   
-  if (is.element(0, nsize)){
-    starting_point <- julia_eval("starting_point = [x, y, 0, 0, 0]")
-  } else{
-  
-  #Calculamos valor inicial
-  if (is.null(starting_point)){
+  if (is.null(starting_point) & tiene_ceros == F){
     starting_point <- julia_eval("starting_point = [x, y, zsize ./ nsize]")
-  } else {
-    # Convertimos el starting point a JuliaObject
-    starting_point <- JuliaObject(starting_point)
-    julia_assign("starting_point", starting_point)
+  } else { 
+    if (is.null(starting_point) & tiene_ceros == T){
+      starting_point <- julia_eval("starting_point = [x, y, 0, 0, 0]")
+    }
   }
+  
+  # Convertimos el starting point a JuliaObject
+  starting_point <- JuliaObject(starting_point)
+  julia_assign("starting_point", starting_point)
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
@@ -123,6 +124,8 @@ calculo_binomial_1 <- function(nsize, zsize, tsize,
                                starting_point = NULL, 
                                proba_nom = str_remove(as.character(runif(1)),"\\.")){
   
+  tiene_ceros <- (is.element(0, nsize) | is.element(0, zsize))
+  
   # Carga los metodos que tiene que cargar
   if (compilar_julia){ 
     julia_eval('include("functions/Model/betabinomialdos.jl")')
@@ -150,14 +153,20 @@ calculo_binomial_1 <- function(nsize, zsize, tsize,
   x_q <- julia_eval("x_q = calculo_xy(mu_q, sigma_q)[1]")
   y_q <- julia_eval("y_q = calculo_xy(mu_q, sigma_q)[2]")
   
-  if (is.null(starting_point)){
+  if (is.null(starting_point) & tiene_ceros == F){
     starting_point <- julia_eval("starting_point = [x_p, x_q, y_p, y_q, 
                                  zsize ./ nsize, tsize ./zsize]")
-  } else {
-    # Convertimos el starting point a JuliaObject
-    starting_point <- JuliaObject(starting_point)
-    julia_assign("starting_point", starting_point)
+  } else { 
+    if (is.null(starting_point) & tiene_ceros == T){
+      starting_point <- julia_eval("starting_point = [x_p, x_q, y_p, y_q, 
+                                 0, 0, 0, 0, 0, 0]")
+    }
   }
+  
+  # Convertimos el starting point a JuliaObject
+  starting_point <- JuliaObject(starting_point)
+  julia_assign("starting_point", starting_point)
+  
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
@@ -223,6 +232,8 @@ calculo_binomial_2 <- function(nsize, s1, s2, s3,
   # s2 es el total de gente que busco atencion medica y tuvo necesidad
   # s3 es la gente que dió positivo a covid, tuvo necesidad y buscó atención médica
   
+  tiene_ceros <- (is.element(0, nsize) | is.element(0, s1) | is.element(0, s2))
+  
   # Carga los metodos que tiene que cargar
   if (compilar_julia){ 
     julia_eval('include("functions/Model/betabinomialtres_v2.jl")')
@@ -259,14 +270,20 @@ calculo_binomial_2 <- function(nsize, s1, s2, s3,
   x_p3 <- julia_eval("x_p3 = calculo_xy(mu_p3, sigma_p3)[1]")
   y_p3 <- julia_eval("y_p3 = calculo_xy(mu_p3, sigma_p3)[2]")
   
-  if (is.null(starting_point)){
+  if (is.null(starting_point) & tiene_ceros == F){
     starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, y_p1, y_p2, y_p3, 
                                  s1 ./ nsize, s2 ./ s1, s3 ./s2]")
-  } else {
-    # Convertimos el starting point a JuliaObject
-    starting_point <- JuliaObject(starting_point)
-    julia_assign("starting_point", starting_point)
+  } else { 
+    if (is.null(starting_point) & tiene_ceros == T){
+      starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, y_p1, y_p2, y_p3, 
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0]")
+    }
   }
+  
+  # Convertimos el starting point a JuliaObject
+  starting_point <- JuliaObject(starting_point)
+  julia_assign("starting_point", starting_point)
+  
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
@@ -342,6 +359,8 @@ calculo_binomial_3 <- function(nsize, s1, s2, s3, s4,
   # s3 es la gente que tuvo necesidad, buscó atención médica y la recibió
   # s4 es la gente que tuvo necesidad, buscó atención médica, la recibió y dio + a IGG
   
+  tiene_ceros <- (is.element(0, nsize) | is.element(0, s1) | is.element(0, s2) | is.element(0, s3))
+  
   # Carga los metodos que tiene que cargar
   if (compilar_julia){ 
     julia_eval('include("functions/Model/betabinomialcuatro_v2.jl")')
@@ -386,16 +405,22 @@ calculo_binomial_3 <- function(nsize, s1, s2, s3, s4,
   x_p4 <- julia_eval("x_p4 = calculo_xy(mu_p4, sigma_p4)[1]")
   y_p4 <- julia_eval("y_p4 = calculo_xy(mu_p4, sigma_p4)[2]")
   
-  
-  if (is.null(starting_point)){
+  if (is.null(starting_point) & tiene_ceros == F){
     starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, x_p4,
                                  y_p1, y_p2, y_p3, y_p4, 
                                  s1 ./ nsize, s2 ./ s1, s3 ./ s2, s4 ./ s3]")
-  } else {
-    # Convertimos el starting point a JuliaObject
-    starting_point <- JuliaObject(starting_point)
-    julia_assign("starting_point", starting_point)
+  } else { 
+    if (is.null(starting_point) & tiene_ceros == T){
+      starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, x_p4,
+                                 y_p1, y_p2, y_p3, y_p4, 
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]")
+    }
   }
+  
+  # Convertimos el starting point a JuliaObject
+  starting_point <- JuliaObject(starting_point)
+  julia_assign("starting_point", starting_point)
+  
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
@@ -462,8 +487,6 @@ calculo_multinomial_0 <- function(nsize, alpha_vec = NULL, k_matrix,
   } else {
     alpha_vec <- check_sum(alpha_vec)
   }
-  
-  nsize <- as.integer(nsize)
   
   nsize <- JuliaObject(nsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
   # para los 3. Si no, ponle el transpuesto
@@ -534,9 +557,6 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
   nsize <- as.integer(nsize)
   tsize <- as.integer(tsize)
   
-  nsize <- JuliaObject(nsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
-  # para los 3. Si no, ponle el transpuesto
-  tsize <- JuliaObject(tsize)
   alpha_vec <- JuliaObject(alpha_vec)
   k_matrix <- JuliaObject(k_matrix)
   
@@ -590,5 +610,4 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
   muestras <- cbind(muestras, aux)
   
   return(muestras)
-  
 }
