@@ -336,14 +336,6 @@ calculo_binomial_2 <- function(nsize, s1, s2, s3,
 #       s3 = Recibió   ~ Binomial(s2, p3) con p3 ~ Beta(alpha_p3, beta_p3)
 #       s4 = IGG       ~ Binomial(s3, p4) con p4 ~ Beta(alpha_p4, beta_p4)
 # Nota: le subi el default de iteraciones por experiencia pasada
-
-# Función para calcular las n's para una probabilidad con tres variables condicionadas
-# ej P(IGG | Necesidad, Buscó y Recibió)
-# donde s1 = Necesidad ~ Binomial(s0, p1) con p1 ~ Beta(alpha_p1, beta_p1)
-#       s2 = Buscó     ~ Binomail(s1, p2) con p2 ~ Beta(alpha_p2, beta_p2)
-#       s3 = Recibió   ~ Binomial(s2, p3) con p3 ~ Beta(alpha_p3, beta_p3)
-#       s4 = IGG       ~ Binomial(s3, p4) con p4 ~ Beta(alpha_p4, beta_p4)
-# Nota: le subi el default de iteraciones por experiencia pasada
 calculo_binomial_3 <- function(nsize, s1, s2, s3, s4, 
                                mu_p1 = 0.5, sigma_p1 = 1/12,
                                mu_p2 = 0.5, sigma_p2 = 1/12,
@@ -457,6 +449,143 @@ calculo_binomial_3 <- function(nsize, s1, s2, s3, s4,
   # guardamos los nombres y modificamos
   nombres <- colnames(aux)
   nombres <- str_replace(nombres, "p4", "ajus_p4")
+  colnames(aux) <- nombres
+  
+  #Bindeamos todo
+  muestras <- cbind(muestras, aux)
+  
+  return(muestras)
+  
+}
+
+
+# Función para calcular las n's para una probabilidad con tres variables condicionadas
+# ej P(IGG | Necesidad, Buscó, Recibió, Recibió IMSS)
+# donde s1 = Necesidad ~ Binomial(s0, p1) con p1 ~ Beta(alpha_p1, beta_p1)
+#       s2 = Buscó     ~ Binomail(s1, p2) con p2 ~ Beta(alpha_p2, beta_p2)
+#       s3 = Recibió   ~ Binomial(s2, p3) con p3 ~ Beta(alpha_p3, beta_p3)
+#       s4 = Rec IMSS  ~ Binomial(s3, p4) con p4 ~ Beta(alpha_p4, beta_p4)
+#       s5 = IGG       ~ Binomial(s4, p5) con p5 ~ Beta(alpha_p5, beta_p5)
+# Nota: le subi el default de iteraciones por experiencia pasada
+calculo_binomial_4 <- function(nsize, s1, s2, s3, s4, s5, 
+                               mu_p1 = 0.5, sigma_p1 = 1/12,
+                               mu_p2 = 0.5, sigma_p2 = 1/12,
+                               mu_p3 = 0.5, sigma_p3 = 1/12, 
+                               mu_p4 = 0.5, sigma_p4 = 1/12,
+                               mu_p5 = 0.5, sigma_p5 = 1/12,
+                               delta = 1, gamma = 1, compilar_julia = T,
+                               burnin = 50000, niter = 100000, nchains = 4, 
+                               starting_point = NULL, 
+                               proba_nom = str_remove(as.character(runif(1)),"\\.")){
+  
+  tiene_ceros <- (is.element(0, nsize) | is.element(0, s1) 
+                  | is.element(0, s2) | is.element(0, s3) |
+                    is.element(0, s4))
+  
+  # Carga los metodos que tiene que cargar
+  if (compilar_julia){ 
+    julia_eval('include("functions/Model/betabinomialcinco.jl")')
+    julia_eval('include("functions/Model/calculo_xy.jl")')
+    julia_eval('include("functions/Model/check_convergencia.jl")')
+  }
+  
+  nsize <- JuliaObject(nsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
+  s1 <- JuliaObject(s1) # para los 3. Si no, ponle el transpuesto osea 
+  s2 <- JuliaObject(s2) #  nsize <- JuliaObject(t(nsize))
+  s3 <- JuliaObject(s3)
+  s4 <- JuliaObject(s4)
+  s5 <- JuliaObject(s5)
+  
+  julia_assign("nsize", nsize)
+  julia_assign("s1", s1)
+  julia_assign("s2", s2)
+  julia_assign("s3", s3)
+  julia_assign("s4", s4)
+  julia_assign("s5", s5)
+  
+  # Calculo de x_p, y_p
+  # p1
+  julia_assign("mu_p1", mu_p1)
+  julia_assign("sigma_p1", sigma_p1)
+  x_p1 <- julia_eval("x_p1 = calculo_xy(mu_p1, sigma_p1)[1]")
+  y_p1 <- julia_eval("y_p1 = calculo_xy(mu_p1, sigma_p1)[2]")
+  
+  # p2
+  julia_assign("mu_p2", mu_p2)
+  julia_assign("sigma_p2", sigma_p2)
+  x_p2 <- julia_eval("x_p2 = calculo_xy(mu_p2, sigma_p2)[1]")
+  y_p2 <- julia_eval("y_p2 = calculo_xy(mu_p2, sigma_p2)[2]")
+  
+  # p3
+  julia_assign("mu_p3", mu_p3)
+  julia_assign("sigma_p3", sigma_p3)
+  x_p3 <- julia_eval("x_p3 = calculo_xy(mu_p3, sigma_p3)[1]")
+  y_p3 <- julia_eval("y_p3 = calculo_xy(mu_p3, sigma_p3)[2]")
+  
+  # p4
+  julia_assign("mu_p4", mu_p4)
+  julia_assign("sigma_p4", sigma_p4)
+  x_p4 <- julia_eval("x_p4 = calculo_xy(mu_p4, sigma_p4)[1]")
+  y_p4 <- julia_eval("y_p4 = calculo_xy(mu_p4, sigma_p4)[2]")
+  
+  # p4
+  julia_assign("mu_p5", mu_p5)
+  julia_assign("sigma_p5", sigma_p5)
+  x_p5 <- julia_eval("x_p5 = calculo_xy(mu_p5, sigma_p5)[1]")
+  y_p5 <- julia_eval("y_p5 = calculo_xy(mu_p5, sigma_p5)[2]")
+  
+  if (is.null(starting_point) & tiene_ceros == F){
+    starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, x_p4,
+                                 y_p1, y_p2, y_p3, y_p4, 
+                                 s1 ./ nsize, s2 ./ s1, s3 ./ s2, s4 ./ s3, s5 ./ s4]")
+  } else { 
+    if (is.null(starting_point) & tiene_ceros == T){
+      starting_point <- julia_eval("starting_point = [x_p1, x_p2, x_p3, x_p4, x_p5,
+                                 y_p1, y_p2, y_p3, y_p4, y_p5, 
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]")
+    }
+  }
+  
+  # Convertimos el starting point a JuliaObject
+  starting_point <- JuliaObject(starting_point)
+  julia_assign("starting_point", starting_point)
+  
+  
+  julia_assign("proba_nom", proba_nom)
+  julia_eval("proba_nom = string(proba_nom)")
+  burnin <- format(burnin, scientific = F)
+  niter <- format(niter, scientific = F)
+  julia_assign("niter", niter)
+  julia_assign("burnin", burnin)
+  julia_assign("nchains", nchains)
+  
+  # Aquí solo le estás diciendo "oye guardame en sim el método betabinomialcuatro con estas variables"
+  julia_eval(paste0("sim       = betabinomialcinco(",nsize,",",s1,",", s2, ",", s3, ",", s4, ",", s5, ",",
+                    x_p1,",", y_p1,",", x_p2,",", y_p2, ",", x_p3,",", y_p3, ",", x_p4,",", y_p4, ",", x_p5,",", y_p5, ",",
+                    delta,",", gamma,")"))
+  
+  # Aquí es cuando ya corres las simulaciones como lo hice yo
+  julia_eval(paste0("hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = ", 
+                    burnin, ", ", niter, ", ", nchains,  
+                    ", init_theta = starting_point)"))
+  
+  # En caso de no convergencia: 
+  # Paso 1. Checar que tus n's estén bien (neta, checalo)
+  # Paso 2. Aumentar el número de iteraciones
+  # Paso 3. Si solamente falla la estacionariedad, checa las gráficas y ve donde está fallando
+  julia_eval(paste0("check_convergencia(hmcsample, ", niter, ", ", burnin, ", ", nchains, ", proba_nom)"))
+  
+  # guardamos muestras como DataFrame
+  muestras <- julia_eval("DataFrame(hmcsample)") 
+  
+  # creamos un tibble auxiliar y lo modificamos
+  aux <- as_tibble(muestras) %>%
+    select(starts_with("p5")) %>%
+    purrr::modify(., ~ ajuste_sens(., delta, gamma))
+  
+  # guardamos los nombres y modificamos
+  nombres <- colnames(aux)
+  nombres <- str_replace(nombres, "p5", "ajus_p5")
   colnames(aux) <- nombres
   
   #Bindeamos todo
@@ -610,4 +739,64 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
   muestras <- cbind(muestras, aux)
   
   return(muestras)
+}
+
+# Función para calcular las n's para una probabilidad de ocupacion
+# ej P(Ocupacion)
+# donde k ~ Multinomial(nsize, p) y p ~ Dirichlet(alpha_vec) 
+# Nota: le subi el default de iteraciones por experiencia pasada
+calculo_poisson_0 <- function(zsize, mu_p_gamma = 0.5, sigma_p_gamma = 1/12, 
+                                  compilar_julia = T,
+                                  burnin = 50000, niter = 100000, nchains = 4, 
+                                  proba_nom = str_remove(as.character(runif(1)),"\\.")){
+  
+  # Carga los metodos que tiene que cargar
+  if (compilar_julia){ 
+    julia_eval('include("functions/Model/gammapoissoncero.jl")')
+    julia_eval('include("functions/Model/calculo_xy.jl")')
+    julia_eval('include("functions/Model/check_convergencia.jl")')
+  }
+  
+  
+  zsize <- JuliaObject(zsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
+  # para los 3. Si no, ponle el transpuesto
+  
+  julia_assign("zsize", zsize)
+  
+  # Calculo de x_p_gamma, y_p_gamma
+  julia_assign("mu_p_gamma", mu_p_gamma)
+  julia_assign("sigma_p_gamma", sigma_p_gamma)
+  x_p_gamma <- julia_eval("x_p_gamma = calculo_xy(mu_p_gamma, sigma_p_gamma)[1]")
+  y_p_gamma <- julia_eval("y_p_gamma = calculo_xy(mu_p_gamma, sigma_p_gamma)[2]")
+  
+  julia_assign("proba_nom", proba_nom)
+  julia_eval("proba_nom = string(proba_nom)")
+  burnin <- format(burnin, scientific = F)
+  niter <- format(niter, scientific = F)
+  julia_assign("niter", niter)
+  julia_assign("burnin", burnin)
+  julia_assign("nchains", nchains)
+  
+  # Aquí solo le estás diciendo "oye guardame en sim el método multinomial_cero con estas variables"
+  julia_eval(paste0("sim       = gammapoissoncero(",zsize,",",x_p_gamma,",", y_p_gamma, ")"))
+  
+  # Aquí es cuando ya corres las simulaciones como lo hice yo
+  julia_eval(paste0("hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = ", 
+                    burnin, ", ", niter, ", ", nchains, ")"))
+  
+  # En caso de no convergencia: 
+  # Paso 1. Checar que tus n's estén bien (neta, checalo)
+  # Paso 2. Aumentar el número de iteraciones
+  # Paso 3. Si solamente falla la estacionariedad, checa las gráficas y ve donde está fallando
+  julia_eval(paste0("check_convergencia(hmcsample, ", niter, ", ", burnin, ", ", nchains, ", proba_nom)"))
+  
+  # guardamos muestras como DataFrame
+  muestras <- julia_eval("DataFrame(hmcsample)") 
+  
+  #Recuerda que para este tipo de casos no tenemos que ajustar con sens y espec
+  
+  muestras <- as_tibble(muestras)
+  
+  return(muestras)
+  
 }

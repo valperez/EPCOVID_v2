@@ -5,7 +5,7 @@ using Distributions
 using StatsPlots
 using DataFrames
 using MCMCChains
-using CSV
+#using CSV
 #using TableView
 
 Random.seed!(99);
@@ -218,8 +218,6 @@ prueba = multinomial_cero(ns, alpha_vec, k)
 check_convergencia(hmcsample, 700000, 350000, 4, "prueba_ocupacion")
 
 
-
-
 # ---- Vamos a hacer la prueba para multinomial_uno
 # Gente que sale diferente de NA al test de IGG
 n = [165, 902, 473]
@@ -239,7 +237,7 @@ prueba_dos = multinomial_uno(n, t, k, alpha_vec, x_q, y_q, delta, gamma)
 hmcsample = sample(prueba_dos, HMC(0.01, 5), MCMCThreads(),
             burnin = 1000, 2000, 4)
 
-
+## ----
 # Vamos a responder la pregunta "Cuantas personas viven en su casa?"
 # donde s es la cantidad de gente que respondió a esa pregunta por centro
 # x_p, y_p vienen de los aprioris de David, maybe??????
@@ -252,3 +250,53 @@ sim = gammapoissoncero(s, x_p, y_p)
 @time hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(),
             burnin = 5000, 10000, 4)
             #Hacer el chequeo de convergencia
+
+##----Vamos a probarlo con IGG | Necesitó, busco y recibio
+
+# n es la cantidad de gente que no dio NA a necesito + no dio NA a IGG + no dio NA a Busco dado que Necesito = Si
+# FIXME
+n = [162, 737, 450]
+# s1 es la cantidad de gente que necesitó
+s1 = [34, 272, 132]
+#s2 es la gente que Busco dado que necesitó
+s2 = [22, 177, 93]
+# s3 es la gente que recibio dado que necesitó y buscó
+# FIXME que el filtro que sea de los tres
+s3 = [21, 166, 91]
+s4 = [10, 83, 51]
+s5 = [9, 80, 49]
+
+#Necesitó
+x_p1 = calculo_xy(0.15, 0.06375)[1]
+y_p1 = calculo_xy(0.15, 0.06375)[2]
+
+#Busco | Necesito
+x_p2 = calculo_xy(0.7, 0.105)[1]
+y_p2 = calculo_xy(0.7, 0.105)[2]
+
+#IGG | Busco, Necesito
+#esto no está correcto, solo quiero ver que funcione
+x_p3 = calculo_xy(0.4571, 0.1241)[1]
+y_p3 = calculo_xy(0.4571, 0.1241)[2]
+
+#IGG | Busco, Necesito, Recibio
+#esto no está correcto, solo quiero ver que funcione
+x_p4 = calculo_xy(0.4668, 0.1244)[1]
+y_p4 = calculo_xy(0.4668, 0.1244)[2]
+
+#IGG | Busco, Necesito, Recibio, Recibió IMSS
+#esto no está correcto, solo quiero ver que funcione
+x_p5 = calculo_xy(0.5, 0.0833)[1]
+y_p5 = calculo_xy(0.5, 0.0833)[2]
+
+delta = 0.8
+gamma = 0.95
+
+sim = betabinomialcinco(n, s1, s2, s3, s4, s5, x_p1, y_p1, x_p2, y_p2, x_p3, y_p3, x_p4, y_p4, x_p5, y_p5, delta, gamma)
+nchains = 4
+#OJO QUE AUMENTÉ EL NUMERO DE ITERACIONES
+# TAL VEZ sea por la proba que estaba mal(?)
+@time hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(),
+                    burnin = 5000, 10000, 4,
+                    init_theta = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+check_convergencia(hmcsample, 10000, 5000, 4, "IGG_dadoNecesitoyBuscoyRecibio")
