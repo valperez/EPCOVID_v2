@@ -745,7 +745,7 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
 # ej P(Ocupacion)
 # donde k ~ Multinomial(nsize, p) y p ~ Dirichlet(alpha_vec) 
 # Nota: le subi el default de iteraciones por experiencia pasada
-calculo_poisson_0 <- function(zsize, mu_p_gamma = 0.5, sigma_p_gamma = 1/12, 
+calculo_poisson_0 <- function(zsize, x_p_gamma = 1/3, y_p_gamma = 0, 
                                   compilar_julia = T,
                                   burnin = 50000, niter = 100000, nchains = 4, 
                                   proba_nom = str_remove(as.character(runif(1)),"\\.")){
@@ -753,7 +753,6 @@ calculo_poisson_0 <- function(zsize, mu_p_gamma = 0.5, sigma_p_gamma = 1/12,
   # Carga los metodos que tiene que cargar
   if (compilar_julia){ 
     julia_eval('include("functions/Model/gammapoissoncero.jl")')
-    julia_eval('include("functions/Model/calculo_xy.jl")')
     julia_eval('include("functions/Model/check_convergencia.jl")')
   }
   
@@ -764,10 +763,8 @@ calculo_poisson_0 <- function(zsize, mu_p_gamma = 0.5, sigma_p_gamma = 1/12,
   julia_assign("zsize", zsize)
   
   # Calculo de x_p_gamma, y_p_gamma
-  julia_assign("mu_p_gamma", mu_p_gamma)
-  julia_assign("sigma_p_gamma", sigma_p_gamma)
-  x_p_gamma <- julia_eval("x_p_gamma = calculo_xy(mu_p_gamma, sigma_p_gamma)[1]")
-  y_p_gamma <- julia_eval("y_p_gamma = calculo_xy(mu_p_gamma, sigma_p_gamma)[2]")
+  julia_assign("x_p_gamma", x_p_gamma)
+  julia_assign("y_p_gamma", y_p_gamma)
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
