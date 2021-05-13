@@ -4,7 +4,7 @@
     alpha_p ~ truncated(Normal(x_p_gamma, 0.1), 0, Inf)
     beta_p ~ truncated(Normal(y_p_gamma, 0.1), 0, Inf)
     lambda          = Vector{T}(undef, 3)
-    for i = 1:length(n)
+    for i = 1:length(s)
          lambda[i] ~ Gamma(alpha_p, beta_p)
          s[i] ~ Poisson(lambda[i])
     end
