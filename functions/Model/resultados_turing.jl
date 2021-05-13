@@ -1,10 +1,5 @@
-using Random
-using Plots
-using Turing
-using Distributions
-using StatsPlots
-using DataFrames
-using MCMCChains
+using Random, Plots, Turing, Distributions,
+        StatsPlots, DataFrames, MCMCChains
 #using CSV
 #using TableView
 
@@ -300,3 +295,15 @@ nchains = 4
                     burnin = 5000, 10000, 4,
                     init_theta = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 check_convergencia(hmcsample, 10000, 5000, 4, "IGG_dadoNecesitoyBuscoyRecibio")
+
+
+#para la lognormal
+k = [1 2 3 5
+     4 5 6 9
+     8 9 10 11]
+alpha = 1
+beta = 1
+tau = 1
+mu = 0
+sim = lognormal(k, alpha, beta, tau, mu)
+hmcsample(sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 5000, 10000, 4))
