@@ -306,4 +306,17 @@ beta = 1
 tau = 1
 mu = 0
 sim = lognormal(k, alpha, beta, tau, mu)
-hmcsample(sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 5000, 10000, 4))
+hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 5000, 10000, 4)
+
+# para una binomial y despues multinomial
+# ojo que lo de m tiene que sumar a lo de s
+n = [300, 800, 500]
+s = [218, 786, 495]
+m = [0 31 7 52 0 17 38 26 23 16 8
+    19 35 372 79 2 49 57 11 101 18 43
+     4 191 17 22 0 20 39 104 44 22 32]
+x = calculo_xy(0.5, 0.0833)[1]
+y = calculo_xy(0.5, 0.0833)[2]
+alpha_vec = [0.1, 0.05, 0.32, 0.18, 0.009, 0.067, 0.008, 0.001, 0.02, 0.07, 0.175]
+sim = binomial_multi(n, s, m, x, y, alpha_vec)
+hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 500, 1000, 4)
