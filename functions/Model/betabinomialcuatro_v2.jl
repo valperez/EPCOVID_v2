@@ -1,3 +1,4 @@
+#
 # Vamos a hacer un modelo tipo IGG | Necesitó, Buscó y recibió (betabinomialtres variables condicionadas)
 # El ejemplo es
 # s1 = Necesitó ~ Bin(s0, p1)
