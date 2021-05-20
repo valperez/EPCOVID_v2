@@ -665,6 +665,10 @@ calculo_multinomial_0 <- function(nsize, k_matrix, alpha_vec = NULL,
 # donde t ~ Binomial(nsize, q) con q ~ Beta(alpha_q, beta_q)
 # y     k ~ Multinomial(nsize, p) y p ~ Dirichlet(alpha_vec) 
 # Nota: le subi el default de iteraciones por experiencia pasada
+# Ejemplo en R que sí funciona:
+# nsize <- c(165, 902, 473)
+# tsize <- c(40, 264, 181)
+# k_matrix <- matrix(c(17, 13, 10, 65, 67, 132, 42, 69, 70), byrow = T, nrow = 3)
 calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
                                   mu_q = 0.5, sigma_q = 1/12,
                                   delta = 1, gamma = 1,
@@ -689,6 +693,8 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
   tsize <- as.integer(tsize)
   class(k_matrix) <- "integer"
   
+  nsize <- JuliaObject(nsize)
+  tsize <- JuliaObject(tsize)
   alpha_vec <- JuliaObject(alpha_vec)
   k_matrix <- JuliaObject(k_matrix)
   

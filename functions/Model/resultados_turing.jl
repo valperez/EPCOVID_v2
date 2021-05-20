@@ -200,14 +200,19 @@ ns = [162, 737, 450] #ocupacion
 alpha_vec = [0.1, 0.15, 0.2, 0.05, 0.01, 0.015, 0.015, 0.08, 0.2, 0.08, 0.1]
 # que pedo con jefe de departamento y jefe, supervisor
 # y con trabajadores en servicios en lo de David
-k = [0 31 1 52 0 17 8 6 23 16 8
+k = [0 31 1.0 52 0 17 8 6 23 16 8
     19 35 372 79 2 49 57 1 101 18 4
      4 191 1 22 0 20 39 104 44 22 3]
+ k = [31 1 52 17 8 6 23 16 8 0 0
+        35 372 79 49 57 1 101 18 4 19 2
+        191 1 22 20 39 104 44 22 3 4 0]
+
 delta = 0.8
 gamma = 0.95
 nchains = 4
 
 prueba = multinomial_cero(ns, alpha_vec, k)
+hmcsample = sample(prueba, HMC(0.01, 5), MCMCThreads(), burnin = 500, 1000, 4)
 @time hmcsample = sample(prueba, HMC(0.01, 5), MCMCThreads(),
             burnin = 350000, 700000, 4)
 check_convergencia(hmcsample, 700000, 350000, 4, "prueba_ocupacion")
