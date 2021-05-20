@@ -617,7 +617,7 @@ calculo_multinomial_0 <- function(nsize, k_matrix, alpha_vec = NULL,
     alpha_vec <- check_sum(alpha_vec)
   }
   
-  nsize = as.integer(nsize)
+  nsize <- as.integer(nsize)
   class(k_matrix) <- "integer"
   
   nsize <- JuliaObject(nsize) 
@@ -687,6 +687,7 @@ calculo_multinomial_1 <- function(nsize, tsize, alpha_vec = NULL, k_matrix,
   
   nsize <- as.integer(nsize)
   tsize <- as.integer(tsize)
+  class(k_matrix) <- "integer"
   
   alpha_vec <- JuliaObject(alpha_vec)
   k_matrix <- JuliaObject(k_matrix)
@@ -756,7 +757,7 @@ calculo_poisson_0 <- function(zsize, x_p_gamma = 1/3, y_p_gamma = 0,
     julia_eval('include("functions/Model/check_convergencia.jl")')
   }
   
-  
+  zsize <- as.integer(zsize)
   zsize <- JuliaObject(zsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
   # para los 3. Si no, ponle el transpuesto
   
