@@ -600,7 +600,7 @@ calculo_binomial_4 <- function(nsize, s1, s2, s3, s4, s5,
 # ej P(Ocupacion)
 # donde k ~ Multinomial(nsize, p) y p ~ Dirichlet(alpha_vec) 
 # Nota: le subi el default de iteraciones por experiencia pasada
-calculo_multinomial_0 <- function(nsize, alpha_vec = NULL, k_matrix, 
+calculo_multinomial_0 <- function(nsize, k_matrix, alpha_vec = NULL,
                                   compilar_julia = T,
                                   burnin = 50000, niter = 100000, nchains = 4, 
                                   proba_nom = str_remove(as.character(runif(1)),"\\.")){
@@ -617,8 +617,10 @@ calculo_multinomial_0 <- function(nsize, alpha_vec = NULL, k_matrix,
     alpha_vec <- check_sum(alpha_vec)
   }
   
-  nsize <- JuliaObject(nsize) #OJO AQUI, tiene que decir "Julia Object of type Array{Float64,1}"
-  # para los 3. Si no, ponle el transpuesto
+  nsize = as.integer(nsize)
+  class(k_matrix) <- "integer"
+  
+  nsize <- JuliaObject(nsize) 
   alpha_vec <- JuliaObject(alpha_vec)
   k_matrix <- JuliaObject(k_matrix)
   

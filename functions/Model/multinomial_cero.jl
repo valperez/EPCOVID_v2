@@ -14,7 +14,6 @@
     for i in 1:length(n)
         # Cada renglón se distribuye Dir(alpha_vec)
         p[i, :] ~ Dirichlet(alpha_vec) # es un vector de longitud el numero de ocupaciones
-
         k[i, :] ~ Multinomial(n[i], p[i, :])
         # OJO que segun yo aqui no hay porque ajustar nada
     end
