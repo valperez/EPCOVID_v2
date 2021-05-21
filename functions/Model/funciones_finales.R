@@ -821,6 +821,7 @@ calculo_lognormal <- function(k, alpha = 1, beta = 1,
     julia_eval('include("functions/Model/check_convergencia.jl")')
   }
   
+  class(k) <- "integer"
   k <- JuliaObject(k) 
   
   julia_assign("k", k)
