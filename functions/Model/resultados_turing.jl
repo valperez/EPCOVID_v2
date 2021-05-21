@@ -308,10 +308,9 @@ k = [1 2 3 5
      8 9 10 11]
 alpha = 1
 beta = 1
-tau = 1
-mu = 0
-sim = lognormal(k, alpha, beta, tau, mu)
-hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 5000, 10000, 4)
+lambda = 1
+sim = lognormal(k, alpha, beta, lambda)
+hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = 500, 1000, 4)
 
 # para una binomial y despues multinomial
 # ojo que lo de m tiene que sumar a lo de s

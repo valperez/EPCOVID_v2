@@ -810,7 +810,7 @@ calculo_poisson_0 <- function(zsize, x_p_gamma = 1/3, y_p_gamma = 0,
 # p ~ Gamma(alpha, beta)
 # OJO: k es matriz donde las columnas deben ser 3 (1 por centro)
 calculo_lognormal <- function(k, alpha = 1, beta = 1, 
-                              tau = 1, mu = 0,
+                              lambda = 1,
                               compilar_julia = T,
                               burnin = 5000, niter = 10000, nchains = 4, 
                               proba_nom = str_remove(as.character(runif(1)),"\\.")){
@@ -829,8 +829,7 @@ calculo_lognormal <- function(k, alpha = 1, beta = 1,
   # Asigacion de parametros
   julia_assign("alpha", alpha)
   julia_assign("beta", beta)
-  julia_assign("tau", tau)
-  julia_assign("mu", mu)
+  julia_assign("lambda", lambda)
   
   julia_assign("proba_nom", proba_nom)
   julia_eval("proba_nom = string(proba_nom)")
@@ -842,7 +841,7 @@ calculo_lognormal <- function(k, alpha = 1, beta = 1,
   
   # Aquí solo le estás diciendo "oye guardame en sim el método multinomial_cero con estas variables"
   julia_eval(paste0("sim       = lognormal(",k,",",alpha,",", beta, ",", 
-                    tau,",", mu,")"))
+                    lambda,")"))
   
   # Aquí es cuando ya corres las simulaciones como lo hice yo
   julia_eval(paste0("hmcsample = sample(sim, HMC(0.01, 5), MCMCThreads(), burnin = ", 
