@@ -17,7 +17,7 @@ function check_convergencia(hmcsample, niter, nburnini, nchains, proba_nom)
 
     #Gelman
     #Usualmente necesitamos que sea menor a 1.1
-    gelman = gelmandiag(hmcsample)
+    gelman = gelmandiag(hmcsample, transform = true)
     psrf = gelman[:, :psrf]
     renglones = size(gelman)[1] #obtiene el numero de renglones
     for i in 1:renglones

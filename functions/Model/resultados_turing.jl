@@ -5,8 +5,8 @@ using Random, Plots, Turing, Distributions,
 
 Random.seed!(99);
 nchains = 4
-niter = 10000
-nburnini = 5000
+niter = 1009
+nburnini = 500
 
 cd("/Users/rod/Dropbox/Coronavirus/EPCOVID_V2/functions/Model/")
 
